@@ -1,0 +1,29 @@
+{
+  "name": "h5-game-payment-gateway",
+  "version": "1.0.0",
+  "description": "Bộ API Component chuyên xử lý tự động nạp tiền, sinh QR VietQR và xử lý Webhook SePay/Ngân hàng cho các dòng Game H5.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node tests/payment.test.js"
+  },
+  "keywords": [
+    "payment-gateway",
+    "vietqr",
+    "sepay",
+    "h5-game",
+    "game-payment",
+    "webhook"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mysql2": "^3.12.0"
+  }
+}

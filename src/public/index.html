@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>H5 Game Payment Gateway - Test & Integration Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: rgba(22, 28, 45, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.2);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 10% 20%, #171d31 0%, #0b0f19 90%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(11, 15, 25, 0.7);
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .logo-badge {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      backdrop-filter: blur(16px);
+      position: relative;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.6);
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      gap: 0.5rem;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      transform: translateY(-1px);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+    }
+    .btn-success:hover {
+      background: linear-gradient(135deg, #059669, #047857);
+    }
+
+    /* QR Display area */
+    .qr-box {
+      text-align: center;
+      padding: 1.5rem;
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 12px;
+      border: 1px dashed var(--card-border);
+      margin-top: 1rem;
+      display: none;
+    }
+    .qr-image {
+      width: 240px;
+      height: 240px;
+      border-radius: 12px;
+      background: #fff;
+      padding: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      margin: 0 auto 1rem;
+    }
+    .order-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.9rem;
+    }
+    .order-info-row:last-child { border-bottom: none; }
+    .badge-status {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .status-paid { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    /* Live Events Log Console */
+    .log-console {
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem;
+      height: 260px;
+      overflow-y: auto;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 1.5rem;
+    }
+    .log-line { margin-bottom: 0.35rem; }
+    .log-success { color: #34d399; }
+    .log-info { color: #60a5fa; }
+    .log-warn { color: #fbbf24; }
+
+    .pulse {
+      animation: pulse-animation 2s infinite;
+    }
+    @keyframes pulse-animation {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <span>⚡ H5 Payment Gateway</span>
+      <span class="logo-badge">Core Engine</span>
+    </div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">
+      Adapter: <strong style="color: #60a5fa;">SePay / VietQR</strong> | Realtime: <strong style="color: #34d399;">SSE Active</strong>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Form Tạo Đơn -->
+    <div class="card">
+      <div class="card-title">🛒 1. Tạo Đơn Nạp Game (Sandbox)</div>
+      
+      <div class="form-group">
+        <label>Game Code / Dự Án</label>
+        <input type="text" id="gameCode" value="H5_DEMO_GAME" placeholder="H5_GAME_A">
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+          <label>ID Người Chơi (User ID)</label>
+          <input type="text" id="userId" value="player_888999">
+        </div>
+        <div class="form-group">
+          <label>Máy Chủ (Server ID)</label>
+          <input type="text" id="serverId" value="S1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Gói Nạp / Vật Phẩm</label>
+        <select id="itemPackage" onchange="updateAmountByPackage()">
+          <option value="PKG_DIAMOND_10K" data-amount="10000">Gói Khởi Động: 10,000đ (1,000 Kim Cương)</option>
+          <option value="PKG_DIAMOND_50K" data-amount="50000" selected>Gói Tân Thủ: 50,000đ (5,000 Kim Cương)</option>
+          <option value="PKG_DIAMOND_100K" data-amount="100000">Gói Cao Cấp: 100,000đ (10,000 Kim Cương)</option>
+          <option value="PKG_VIP_CARD" data-amount="200000">Thẻ Chí Tôn Vĩnh Viễn: 200,000đ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Số Tiền Nạp (VNĐ)</label>
+        <input type="number" id="amount" value="50000">
+      </div>
+
+      <div class="form-group">
+        <label>Callback URL (Nhận kết quả nạp sang Game Server)</label>
+        <input type="text" id="notifyUrl" value="http://127.0.0.1:3001/api/v1/health" placeholder="http://game.example.com/api/payment_callback.php">
+      </div>
+
+      <button class="btn btn-primary" onclick="createNewOrder()">
+        <span>Tạo Mã Nạp & Sinh VietQR</span> ➔
+      </button>
+
+      <!-- Logs realtime -->
+      <div class="log-console" id="logConsole">
+        <div class="log-line log-info">[Gateway] Sandbox Playground Ready on Port 3001.</div>
+      </div>
+    </div>
+
+    <!-- Hiển Thị QR Code & Trạng Thái -->
+    <div class="card">
+      <div class="card-title">📱 2. Thanh Toán Tự Động (VietQR / SePay)</div>
+
+      <div id="emptyQrState" style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+        <div>Vui lòng bấm <strong>"Tạo Mã Nạp & Sinh VietQR"</strong> bên cạnh để hiển thị mã thanh toán.</div>
+      </div>
+
+      <div class="qr-box" id="qrContainer">
+        <div style="margin-bottom: 0.75rem; font-weight: 700; font-size: 1.1rem; color: #fff;">
+          Quét Mã QR Ngân Hàng Để Thanh Toán
+        </div>
+        <img id="qrImg" class="qr-image" alt="VietQR SePay">
+
+        <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+          <div class="order-info-row">
+            <span style="color: var(--text-muted);">Mã đơn hàng:</span>
+            <strong id="displayOrderCode">-</strong>
+          </div>
+          <div class="order-info-row">
+            <span style="color: var(--text-muted);">Cú pháp chuyển khoản:</span>
+            <strong id="displayPaymentCode" style="color: #60a5fa; font-size: 1.05rem;">-</strong>
+          </div>
+          <div class="order-info-row">
+            <span style="color: var(--text-muted);">Số tiền:</span>
+            <strong id="displayAmount" style="color: #34d399; font-size: 1.1rem;">-</strong>
+          </div>
+          <div class="order-info-row">
+            <span style="color: var(--text-muted);">Trạng thái:</span>
+            <span id="displayStatus" class="badge-status status-pending pulse">CHỜ CHUYỂN KHOẢN...</span>
+          </div>
+        </div>
+
+        <!-- 1-Click Sandbox Simulator -->
+        <div style="padding-top: 1rem; border-top: 1px solid var(--card-border);">
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            🛠️ <strong>Chế độ Test Local không cần chuyển khoản thật:</strong>
+          </div>
+          <button class="btn btn-success" id="btnSimulate" onclick="simulatePayment()">
+            🚀 Bấm để Mô Phỏng Ngân Hàng Đã Chuyển Tiền (Webhook SePay)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentOrder = null;
+    let sseSource = null;
+
+    function log(msg, type = 'info') {
+      const consoleEl = document.getElementById('logConsole');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = `log-line log-${type}`;
+      div.innerText = `[${time}] ${msg}`;
+      consoleEl.appendChild(div);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function updateAmountByPackage() {
+      const select = document.getElementById('itemPackage');
+      const amount = select.options[select.selectedIndex].getAttribute('data-amount');
+      document.getElementById('amount').value = amount;
+    }
+
+    async function createNewOrder() {
+      if (sseSource) {
+        sseSource.close();
+      }
+
+      const payload = {
+        gameCode: document.getElementById('gameCode').value,
+        userId: document.getElementById('userId').value,
+        serverId: document.getElementById('serverId').value,
+        itemPackage: document.getElementById('itemPackage').value,
+        amount: Number(document.getElementById('amount').value),
+        notifyUrl: document.getElementById('notifyUrl').value
+      };
+
+      log(`Gửi yêu cầu tạo đơn nạp: ${payload.amount.toLocaleString()}đ...`);
+
+      try {
+        const res = await fetch('/api/v1/orders/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          currentOrder = data.data;
+          log(`Tạo đơn thành công: ${currentOrder.orderCode} (Mã CK: ${currentOrder.paymentCode})`, 'success');
+
+          // Hiển thị UI QR
+          document.getElementById('emptyQrState').style.display = 'none';
+          document.getElementById('qrContainer').style.display = 'block';
+
+          document.getElementById('qrImg').src = currentOrder.qrCodeUrl;
+          document.getElementById('displayOrderCode').innerText = currentOrder.orderCode;
+          document.getElementById('displayPaymentCode').innerText = currentOrder.paymentCode;
+          document.getElementById('displayAmount').innerText = currentOrder.amount.toLocaleString() + ' đ';
+          
+          const statusEl = document.getElementById('displayStatus');
+          statusEl.className = 'badge-status status-pending pulse';
+          statusEl.innerText = 'CHỜ CHUYỂN KHOẢN...';
+
+          // Kích hoạt SSE Realtime listener
+          listenToSse(currentOrder.orderCode);
+        } else {
+          log(`Lỗi tạo đơn: ${data.error}`, 'warn');
+        }
+      } catch (err) {
+        log(`Lỗi kết nối: ${err.message}`, 'warn');
+      }
+    }
+
+    function listenToSse(orderCode) {
+      log(`Bắt đầu lắng nghe SSE Realtime: /api/v1/orders/${orderCode}/stream`);
+      sseSource = new EventSource(`/api/v1/orders/${orderCode}/stream`);
+
+      sseSource.onmessage = (event) => {
+        try {
+          const evData = JSON.parse(event.data);
+          log(`SSE Nhận sự kiện: ${JSON.stringify(evData)}`, 'info');
+
+          if (evData.status === 'PAID') {
+            const statusEl = document.getElementById('displayStatus');
+            statusEl.className = 'badge-status status-paid';
+            statusEl.classList.remove('pulse');
+            statusEl.innerText = '✅ ĐÃ THANH TOÁN THÀNH CÔNG!';
+            log(`🎉 Đơn ${orderCode} nạp thành công! Đã gửi callback tới Game Server.`, 'success');
+            sseSource.close();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      };
+
+      sseSource.onerror = (err) => {
+        console.warn('SSE connection error:', err);
+      };
+    }
+
+    async function simulatePayment() {
+      if (!currentOrder) {
+        alert('Vui lòng tạo đơn trước!');
+        return;
+      }
+
+      log(`Mô phỏng SePay Webhook nạp tiền cho đơn ${currentOrder.paymentCode}...`);
+      try {
+        const res = await fetch('/api/v1/sandbox/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            paymentCode: currentOrder.paymentCode,
+            amount: currentOrder.amount
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          log(`Simulator đã gửi webhook SePay thành công! Mã giao dịch: ${data.simulatedPayload.referenceCode}`, 'success');
+        } else {
+          log(`Simulator báo lỗi: ${data.result?.error || 'Lỗi không xác định'}`, 'warn');
+        }
+      } catch (err) {
+        log(`Lỗi simulate: ${err.message}`, 'warn');
+      }
+    }
+  </script>
+</body>
+</html>
